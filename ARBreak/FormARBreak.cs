@@ -74,17 +74,22 @@ namespace ARBreak
             }
         }
 
+        private void UpdateLoop()
+        {
+
+        }
+
         private void StartVbScript()
         {
             vbProcess = new Process();
             vbProcess.StartInfo.FileName = @"C:\WINDOWS\SysWOW64\cscript.exe";
-            vbProcess.StartInfo.Arguments = absolutePath + @"ARBreak.vbs";
+            vbProcess.StartInfo.Arguments = absolutePath + @"ARBreak.vbs" + " " + numInput.Value;
             vbProcess.StartInfo.UseShellExecute = false;
             //vbProcess.StartInfo.RedirectStandardInput = true;
             vbProcess.StartInfo.CreateNoWindow = true;
             vbProcess.Start();
             isProcessRunning = true;
-            // create a new file in %tmp% unique to this instance
+            new Task(UpdateLoop).Start();
             new Task(UpdateTimeLeftLabel).Start();
         }
 
