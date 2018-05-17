@@ -38,7 +38,8 @@ namespace ARBreak
             absolutePath = @"";
 #endif
             timerStatus = Status.NOT_RUNNING;
-            UpdateStatusLabel();
+            UpdateStatusColor();
+
         }
 
         public void setTempFolderPath()
@@ -58,7 +59,7 @@ namespace ARBreak
             }
         }
 
-        private void UpdateStatusLabel()
+        private void UpdateStatusColor()
         {
             lblStatus.Text = timerStatus.ToString();
             if (timerStatus == Status.TIME_TO_WORK)
@@ -73,6 +74,15 @@ namespace ARBreak
             {
                 lblStatus.BackColor = System.Drawing.Color.Transparent;
             }
+        }
+
+        public void TimedPopup(int seconds, string content, string caption)
+        {
+            var w = new Form() { Size = new System.Drawing.Size(1000, 1000) };
+            w.TopMost = true;
+            Task.Delay(TimeSpan.FromSeconds(seconds))
+                    .ContinueWith((t) => w.Close(), TaskScheduler.FromCurrentSynchronizationContext());
+            MessageBox.Show(w, content, caption);
         }
 
         public Task<int> WaitForExitAsync()//CancellationToken cancellationToken = default(CancellationToken))
@@ -126,9 +136,14 @@ namespace ARBreak
             if (!isForceQuit)
             {
                 if (timerStatus == Status.TIME_TO_WORK)
+                {
                     timerStatus = Status.TAKE_A_BREAK;
+                }
                 else
+                {
                     timerStatus = Status.TIME_TO_WORK;
+                }
+                TimedPopup(10, timerStatus.ToString(), "ARBreak");
                 this.btnStart.Invoke((MethodInvoker)delegate
                 {
                     this.btnStart.PerformClick();
@@ -160,7 +175,7 @@ namespace ARBreak
             isForceQuit = false;
             if (timerStatus == Status.NOT_RUNNING)
                 timerStatus = Status.TIME_TO_WORK;
-            UpdateStatusLabel();
+            UpdateStatusColor();
             new Task(UpdateLoop).Start();
             new Task(UpdateTimeLeftLabel).Start();
         }
@@ -193,7 +208,7 @@ namespace ARBreak
             lblTimeLeft.Text = "-- minutes left";
             CleanupFile();
             timerStatus = Status.NOT_RUNNING;
-            UpdateStatusLabel();
+            UpdateStatusColor();
             SetInterval();
         }
 
