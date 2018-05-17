@@ -53,12 +53,7 @@ Function BreakLoop(breakInterval)
 			Write(timeLeftSecs)
 			prevTimeLeftSecs = timeLeftSecs
 		End If
-		If timeLeftSecs = 0 Then
-			popupRet = objShell.Popup("Its your time for a BREAK! Shall I start the next one?",_
-					popupTimeOutSecs,"BREAK!",vbQuestion+vbYesNo)
-			Select Case popupRet
-				case 6		timeLeftSecs = breakInterval
-			End Select
+		If timeLeftSecs = 0 Then			
 			Write(timeLeftSecs)
 		End If
 	Loop While (timeLeftSecs > 0)
@@ -69,11 +64,7 @@ Sub Main()
 	Set objNet = CreateObject("WScript.Network")
 	outFile="C:\Users\" & objNet.UserName & "\AppData\Local\Temp\ARBreak_data_" & CurrProcessId & ".txt"
 	Write(0)
-	breakInterval = InputBox("Break Interval Length(in minutes): ", "ARBreak")
-	input = CInt(breakInterval)
-	If input <= 0 Then
-		WScript.Quit -99
-	End If
+	breakInterval = WScript.Arguments(0)
 	retVal = BreakLoop(breakInterval*minToSecs)
 	DeleteDataFile()
 	WScript.Quit(retVal)
