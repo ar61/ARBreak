@@ -8,12 +8,22 @@ namespace ARBreak
 {
     public partial class FormARBreak : Form
     {
-        Process vbProcess;
+        Process vbProcess = null;
+        int currentInterval = 0;
         bool isProcessRunning = true;
+        bool isForceQuit = false;
         string tmpPath = @"";
         string absolutePath;
         int processId = 0;
         
+        enum Status
+        {
+            NOT_RUNNING,
+            TIME_TO_WORK,
+            TAKE_A_BREAK,
+        }
+        Status timerStatus;
+
         public FormARBreak()
         {
             InitializeComponent();
@@ -27,11 +37,42 @@ namespace ARBreak
 #else
             absolutePath = @"";
 #endif
+            timerStatus = Status.NOT_RUNNING;
+            UpdateStatusLabel();
         }
 
         public void setTempFolderPath()
         {
             tmpPath = System.Environment.GetEnvironmentVariable("tmp");
+        }
+
+        private void SetInterval()
+        {
+            if(timerStatus == Status.TAKE_A_BREAK)
+            {
+                currentInterval = (int)numBreak.Value;
+            }
+            else
+            {
+                currentInterval = (int)numWork.Value;
+            }
+        }
+
+        private void UpdateStatusLabel()
+        {
+            lblStatus.Text = timerStatus.ToString();
+            if (timerStatus == Status.TIME_TO_WORK)
+            {
+                lblStatus.BackColor = System.Drawing.Color.GreenYellow;
+            }
+            else if (timerStatus == Status.TAKE_A_BREAK)
+            {
+                lblStatus.BackColor = System.Drawing.Color.Orchid;
+            }
+            else
+            {
+                lblStatus.BackColor = System.Drawing.Color.Transparent;
+            }
         }
 
         public Task<int> WaitForExitAsync()//CancellationToken cancellationToken = default(CancellationToken))
@@ -46,8 +87,8 @@ namespace ARBreak
 
         private void UpdateTimeLeftLabel()
         {
-            // Wait for 5 seconds for the vb script to write the correct value to file
-            Thread.Sleep(1000 * 5);
+            // Wait for 1 second for the vb script to write the correct value to file
+            Thread.Sleep(1000*2);
             processId = vbProcess.Id;
             while ( isProcessRunning )
             {
@@ -76,19 +117,50 @@ namespace ARBreak
 
         private void UpdateLoop()
         {
-
+            while(isProcessRunning)
+            {
+                Thread.Sleep(1000);
+            }
+            // If we press quit/restart we should not automatically start a new process
+            // else we start our break timer
+            if (!isForceQuit)
+            {
+                if (timerStatus == Status.TIME_TO_WORK)
+                    timerStatus = Status.TAKE_A_BREAK;
+                else
+                    timerStatus = Status.TIME_TO_WORK;
+                this.btnStart.Invoke((MethodInvoker)delegate
+                {
+                    this.btnStart.PerformClick();
+                });
+            }
+            else
+            {
+                timerStatus = Status.NOT_RUNNING;
+            }
         }
 
         private void StartVbScript()
         {
+            if(vbProcess != null)
+            {
+                vbProcess.Dispose();
+                vbProcess = null;
+            }
+            btnStart.Enabled = false;
+            SetInterval();
             vbProcess = new Process();
             vbProcess.StartInfo.FileName = @"C:\WINDOWS\SysWOW64\cscript.exe";
-            vbProcess.StartInfo.Arguments = absolutePath + @"ARBreak.vbs" + " " + numInput.Value;
+            vbProcess.StartInfo.Arguments = absolutePath + @"ARBreak.vbs" + " " + currentInterval;
             vbProcess.StartInfo.UseShellExecute = false;
             //vbProcess.StartInfo.RedirectStandardInput = true;
             vbProcess.StartInfo.CreateNoWindow = true;
             vbProcess.Start();
             isProcessRunning = true;
+            isForceQuit = false;
+            if (timerStatus == Status.NOT_RUNNING)
+                timerStatus = Status.TIME_TO_WORK;
+            UpdateStatusLabel();
             new Task(UpdateLoop).Start();
             new Task(UpdateTimeLeftLabel).Start();
         }
@@ -108,24 +180,29 @@ namespace ARBreak
             {
                 try
                 {
-                    //vbProcess.CloseMainWindow();
                     vbProcess.Kill();
                 }
                 catch(InvalidOperationException)
                 {
-                    // Ignore as process may not exist on multiple 
+                    // Ignore as process may not exist
                 }
             }
+            isForceQuit = true;
             isProcessRunning = false;
+            btnStart.Enabled = true;
             lblTimeLeft.Text = "-- minutes left";
             CleanupFile();
+            timerStatus = Status.NOT_RUNNING;
+            UpdateStatusLabel();
+            SetInterval();
         }
 
         private async void BtnStart_ClickAsync(object sender, EventArgs e)
         {
-            btnStart.Enabled = false;
             StartVbScript();
             await WaitForExitAsync();
+            isProcessRunning = false;
+            btnStart.Enabled = true;
         }
 
         private void OnQuit_Clicked(object sender, FormClosingEventArgs e)
@@ -139,6 +216,7 @@ namespace ARBreak
             CloseVbScript();
             StartVbScript();
             await WaitForExitAsync();
+            isProcessRunning = false;
         }
 
         private void btnStop_Click(object sender, EventArgs e)
