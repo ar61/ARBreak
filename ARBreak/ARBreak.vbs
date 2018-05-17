@@ -65,10 +65,6 @@ Sub Main()
 	outFile="C:\Users\" & objNet.UserName & "\AppData\Local\Temp\ARBreak_data_" & CurrProcessId & ".txt"
 	Write(0)
 	breakInterval = WScript.Arguments(0)
-	input = CInt(breakInterval)
-	If input <= 0 Then
-		WScript.Quit -99
-	End If
 	retVal = BreakLoop(breakInterval*minToSecs)
 	DeleteDataFile()
 	WScript.Quit(retVal)
