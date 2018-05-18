@@ -33,7 +33,7 @@ namespace ARBreak
         {
             setTempFolderPath();
 #if DEBUG
-            absolutePath = @"C:\Users\arathod16\Desktop\ARBreak-master\ARBreak-master\Helper_Files\";
+            absolutePath = @"C:\Users\User\Documents\Abhi\MyPrograms\ARBreak\Helper_Files\";
 #else
             absolutePath = @"";
 #endif
@@ -97,7 +97,7 @@ namespace ARBreak
 
         private void UpdateTimeLeftLabel()
         {
-            // Wait for 1 second for the vb script to write the correct value to file
+            // Wait for 2 seconds for the vb script to write the correct value to file
             Thread.Sleep(1000*2);
             processId = vbProcess.Id;
             while ( isProcessRunning )
