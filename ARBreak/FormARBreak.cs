@@ -15,17 +15,21 @@ namespace ARBreak
         string tmpPath = @"";
         string absolutePath;
         int processId = 0;
+        int timeLeftMins = 0;
+        Status prevStatus = Status.NOT_RUNNING;
         
         enum Status
         {
             NOT_RUNNING,
             TIME_TO_WORK,
             TAKE_A_BREAK,
+            SNOOZE,
         }
         Status timerStatus;
 
         public FormARBreak()
         {
+            this.StartPosition = FormStartPosition.CenterScreen;
             InitializeComponent();
         }
 
@@ -33,7 +37,8 @@ namespace ARBreak
         {
             setTempFolderPath();
 #if DEBUG
-            absolutePath = @"C:\Users\User\Documents\Abhi\MyPrograms\ARBreak\Helper_Files\";
+            absolutePath = System.IO.Path.GetDirectoryName(
+                System.Reflection.Assembly.GetEntryAssembly().Location) + @"\..\..\..\Helper_Files\";
 #else
             absolutePath = @"";
 #endif
@@ -53,6 +58,10 @@ namespace ARBreak
             {
                 currentInterval = (int)numBreak.Value;
             }
+            else if (timerStatus == Status.SNOOZE)
+            {
+                currentInterval = timeLeftMins + 5;
+            }
             else
             {
                 currentInterval = (int)numWork.Value;
@@ -70,28 +79,13 @@ namespace ARBreak
             {
                 lblStatus.BackColor = System.Drawing.Color.Orchid;
             }
-            else
-            {
-                lblStatus.BackColor = System.Drawing.Color.Transparent;
-            }
         }
 
-        public void TimedPopup(int seconds, string content, string caption)
-        {
-            var w = new Form() { Size = new System.Drawing.Size(1000, 1000) };
-            w.TopMost = true;
-            Task.Delay(TimeSpan.FromSeconds(seconds))
-                    .ContinueWith((t) => w.Close(), TaskScheduler.FromCurrentSynchronizationContext());
-            MessageBox.Show(w, content, caption);
-        }
-
-        public Task<int> WaitForExitAsync()//CancellationToken cancellationToken = default(CancellationToken))
+        public Task<int> WaitForExitAsync()
         {
             var tcs = new TaskCompletionSource<int>(TaskCreationOptions.AttachedToParent);
             vbProcess.EnableRaisingEvents = true;
             vbProcess.Exited += (sender, args) => tcs.TrySetResult(0);
-            //if (cancellationToken != default(CancellationToken))
-            //    cancellationToken.Register( () => { tcs.TrySetCanceled(); } );
             return tcs.Task;
         }
 
@@ -111,6 +105,7 @@ namespace ARBreak
                         readLine = line;
                     }
                     file.Close();
+                    timeLeftMins = Int32.Parse( readLine.Split(' ')[0] );
                     // To pass back control to Main Thread to update UI
                     // Since UI can only be updated on the main thread
                     this.lblTimeLeft.Invoke((MethodInvoker)delegate {
@@ -123,6 +118,17 @@ namespace ARBreak
                 }
                 Thread.Sleep(1000 * 30);
             }
+        }
+
+        private void ShowPopup()
+        {
+            Popup popup = new Popup();
+            popup.data = timerStatus.ToString();
+            popup.Owner = this;
+            popup.TopMost = true;
+            popup.ShowInTaskbar = false;
+            popup.StartPosition = FormStartPosition.CenterScreen;
+            popup.ShowDialog();
         }
 
         private void UpdateLoop()
@@ -143,10 +149,17 @@ namespace ARBreak
                 {
                     timerStatus = Status.TIME_TO_WORK;
                 }
-                TimedPopup(10, timerStatus.ToString(), "ARBreak");
-                this.btnStart.Invoke((MethodInvoker)delegate
-                {
+                this.Invoke((MethodInvoker) delegate { ShowPopup(); });
+                this.flMain.Invoke((MethodInvoker)delegate {
+                    this.flMain.Visible = true;
+                });
+                //Thread.Sleep(1000);
+                this.btnStart.Invoke((MethodInvoker)delegate {
                     this.btnStart.PerformClick();
+                });
+                //Thread.Sleep(1000);
+                this.flMain.Invoke((MethodInvoker)delegate {
+                    this.flMain.Visible = false;
                 });
             }
             else
@@ -168,12 +181,11 @@ namespace ARBreak
             vbProcess.StartInfo.FileName = @"C:\WINDOWS\SysWOW64\cscript.exe";
             vbProcess.StartInfo.Arguments = absolutePath + @"ARBreak.vbs" + " " + currentInterval;
             vbProcess.StartInfo.UseShellExecute = false;
-            //vbProcess.StartInfo.RedirectStandardInput = true;
             vbProcess.StartInfo.CreateNoWindow = true;
             vbProcess.Start();
             isProcessRunning = true;
             isForceQuit = false;
-            if (timerStatus == Status.NOT_RUNNING)
+            if( timerStatus == Status.NOT_RUNNING)
                 timerStatus = Status.TIME_TO_WORK;
             UpdateStatusColor();
             new Task(UpdateLoop).Start();
@@ -238,6 +250,24 @@ namespace ARBreak
         {
             btnStart.Enabled = true;
             CloseVbScript();
+        }
+
+        private async void btnSnooze_Click(object sender, EventArgs e)
+        {
+            btnStart.Enabled = true;
+            CloseVbScript();
+            prevStatus = timerStatus;
+            timerStatus = Status.SNOOZE;
+            StartVbScript();
+            await WaitForExitAsync();
+            isProcessRunning = false;
+            btnSnooze.Enabled = false;
+        }
+
+        private void btnSizeController_MouseEnter(object sender, EventArgs e)
+        {
+            btnSizeController.Text = btnSizeController.Text == "+" ? "-" : "+";
+            flMain.Visible = flMain.Visible ? false : true;
         }
     }
 }
