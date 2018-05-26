@@ -1,6 +1,6 @@
 namespace ARBreak
 {
-    partial class Popup
+    public partial class Popup
     {
         /// <summary>
         /// Required designer variable.
@@ -28,53 +28,54 @@ namespace ARBreak
         /// </summary>
         private void InitializeComponent()
         {
-            this.label1 = new System.Windows.Forms.Label();
-            this.button1 = new System.Windows.Forms.Button();
-            this.pbGiphyImg = new System.Windows.Forms.PictureBox();
-            ((System.ComponentModel.ISupportInitialize)(this.pbGiphyImg)).BeginInit();
+            this.lblMessage = new System.Windows.Forms.Label();
+            this.btnConfirm = new System.Windows.Forms.Button();
+            this.wbRandomImg = new System.Windows.Forms.WebBrowser();
             this.SuspendLayout();
             // 
-            // label1
+            // lblMessage
             // 
-            this.label1.AutoSize = true;
-            this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 20.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.Location = new System.Drawing.Point(55, 26);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(238, 31);
-            this.label1.TabIndex = 0;
-            this.label1.Text = "Its time for a break";
+            this.lblMessage.AutoSize = true;
+            this.lblMessage.Font = new System.Drawing.Font("Microsoft Sans Serif", 20.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblMessage.Location = new System.Drawing.Point(86, 24);
+            this.lblMessage.Name = "lblMessage";
+            this.lblMessage.Size = new System.Drawing.Size(238, 31);
+            this.lblMessage.TabIndex = 0;
+            this.lblMessage.Text = "Its time for a break";
             // 
-            // button1
+            // btnConfirm
             // 
-            this.button1.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button1.Location = new System.Drawing.Point(118, 251);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(127, 44);
-            this.button1.TabIndex = 1;
-            this.button1.Text = "Ok";
-            this.button1.UseVisualStyleBackColor = true;
+            this.btnConfirm.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnConfirm.Location = new System.Drawing.Point(138, 306);
+            this.btnConfirm.Name = "btnConfirm";
+            this.btnConfirm.Size = new System.Drawing.Size(127, 44);
+            this.btnConfirm.TabIndex = 1;
+            this.btnConfirm.Text = "Ok";
+            this.btnConfirm.UseVisualStyleBackColor = true;
+            this.btnConfirm.Click += new System.EventHandler(this.btnConfirm_Click);
             // 
-            // pbGiphyImg
+            // wbRandomImg
             // 
-            this.pbGiphyImg.BackColor = System.Drawing.Color.Black;
-            this.pbGiphyImg.Location = new System.Drawing.Point(32, 72);
-            this.pbGiphyImg.Name = "pbGiphyImg";
-            this.pbGiphyImg.Size = new System.Drawing.Size(297, 170);
-            this.pbGiphyImg.TabIndex = 2;
-            this.pbGiphyImg.TabStop = false;
+            this.wbRandomImg.CausesValidation = false;
+            this.wbRandomImg.Location = new System.Drawing.Point(47, 76);
+            this.wbRandomImg.MinimumSize = new System.Drawing.Size(20, 20);
+            this.wbRandomImg.Name = "wbRandomImg";
+            this.wbRandomImg.ScrollBarsEnabled = false;
+            this.wbRandomImg.Size = new System.Drawing.Size(313, 213);
+            this.wbRandomImg.TabIndex = 2;
             // 
             // Popup
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(362, 307);
-            this.Controls.Add(this.pbGiphyImg);
-            this.Controls.Add(this.button1);
-            this.Controls.Add(this.label1);
+            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
+            this.ClientSize = new System.Drawing.Size(401, 364);
+            this.Controls.Add(this.wbRandomImg);
+            this.Controls.Add(this.btnConfirm);
+            this.Controls.Add(this.lblMessage);
             this.Name = "Popup";
             this.Text = "Popup";
             this.Load += new System.EventHandler(this.OnLoad);
-            ((System.ComponentModel.ISupportInitialize)(this.pbGiphyImg)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -82,8 +83,8 @@ namespace ARBreak
 
         #endregion
 
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.PictureBox pbGiphyImg;
+        private System.Windows.Forms.Label lblMessage;
+        private System.Windows.Forms.Button btnConfirm;
+        public System.Windows.Forms.WebBrowser wbRandomImg;
     }
 }
