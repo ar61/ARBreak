@@ -261,7 +261,7 @@ namespace ARBreak
             StartVbScript();
             await WaitForExitAsync();
             isProcessRunning = false;
-            btnSnooze.Enabled = false;
+            //btnSnooze.Enabled = false;
         }
 
         private void btnSizeController_MouseEnter(object sender, EventArgs e)
